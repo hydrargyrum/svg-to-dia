@@ -22,5 +22,9 @@ mv shapes/* ~/.dia/shapes
 - If you intend to publish, make sure to edit the `.sheet` files to add human-readable descriptions (multiple languages if you can)
 - ... and to edit the `.shape` files to add better coordinates of attachment points
 
+# Requirements
+- Python
+- ImageMagick
+
 # License
 svg-to-dia is released in the public domain, see [UNLICENSE file](UNLICENSE).
