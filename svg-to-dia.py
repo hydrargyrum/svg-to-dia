@@ -89,6 +89,7 @@ def main():
         objects={}
     )
 
+    seen = set()
     for svg_file in args.svg_file:
         svg_file = Path(svg_file)
 
@@ -98,6 +99,10 @@ def main():
         shape_path = pshapes.joinpath(f"{svg_file.stem}.shape")
         shape_path.write_text(tshape)
         print(f"wrote {shape_path}")
+        if svg_file.stem in seen:
+            print(f"ignoring duplicate {svg_file.stem}")
+            continue
+        seen.add(svg_file.stem)
 
         png_file = f'{pshapes}/{svg_file.stem}.png'
         subprocess.check_call([
