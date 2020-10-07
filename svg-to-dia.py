@@ -58,6 +58,9 @@ def build_shape(svg_path):
         (0, width),
         (height // 2, 0),
         (height, 0),
+        (width // 2, height),
+        (width, height // 2),
+        (width, height),
     ]
     for x, y in points:
         ET.SubElement(xconns, 'point', attrib={'x': str(x), 'y': str(y)})
