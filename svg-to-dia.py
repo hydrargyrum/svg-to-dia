@@ -6,7 +6,6 @@ import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from pathlib import Path
 import getpass
-import re
 import subprocess
 
 
@@ -38,19 +37,16 @@ def build_sheet(sheet):
     return xsheet
 
 
-def get_float(s):
-    return float(re.match(r'\d+([.]\d*)?', s)[0])
-
-
-def build_shape(svg_path):
-    orig_xsvg = ET.parse(str(svg_path)).getroot()
-
-    xshape = ET.Element('shape', attrib={'xmlns': 'http://www.daa.com.au/~james/dia-shape-ns'})
+def build_shape(svg_path, width, height):
+    attrib = {
+        'xmlns:svg': "http://www.w3.org/2000/svg",
+        'xmlns:xlink': "http://www.w3.org/1999/xlink",
+        'xmlns': 'http://www.daa.com.au/~james/dia-shape-ns',
+    }
+    xshape = ET.Element('shape', attrib=attrib)
     ET.SubElement(xshape, 'name').text = svg_path.stem
     ET.SubElement(xshape, 'icon').text = f"{svg_path.stem}.png"
 
-    width = int(get_float(orig_xsvg.attrib['width']))
-    height = int(get_float(orig_xsvg.attrib['height']))
     xconns = ET.SubElement(xshape, 'connections')
     points = [
         (0, 0),
@@ -66,7 +62,9 @@ def build_shape(svg_path):
         ET.SubElement(xconns, 'point', attrib={'x': str(x), 'y': str(y)})
 
     ET.SubElement(xshape, 'aspectratio', attrib={'type': 'fixed'})
-    xshape.append(orig_xsvg)
+
+    xsvg = ET.SubElement(xshape, 'svg:svg')
+    ET.SubElement(xsvg, 'svg:image', attrib={'xlink:href': str(svg_path), 'x': '0', 'y': '0', 'width': str(width), 'height': str(height)})
 
     return xshape
 
@@ -92,13 +90,6 @@ def main():
     seen = set()
     for svg_file in args.svg_file:
         svg_file = Path(svg_file)
-
-        xshape = build_shape(svg_file)
-        # ET.indent(xshape)
-        tshape = ET.tostring(xshape, encoding='unicode')
-        shape_path = pshapes.joinpath(f"{svg_file.stem}.shape")
-        shape_path.write_text(tshape)
-        print(f"wrote {shape_path}")
         if svg_file.stem in seen:
             print(f"ignoring duplicate {svg_file.stem}")
             continue
@@ -113,6 +104,24 @@ def main():
             png_file,
         ])
         print(f"wrote {png_file}")
+
+        width, height = map(int, subprocess.check_output([
+            'identify',
+            '-format',
+            '%w %h',
+            png_file,
+        ]).decode().split())
+
+        new_path = pshapes.joinpath(f"{svg_file.stem}.svg")
+        new_path.write_text(svg_file.read_text())
+        print(f"wrote {new_path}")
+
+        xshape = build_shape(svg_file, width, height)
+        # ET.indent(xshape)
+        tshape = ET.tostring(xshape, encoding='unicode')
+        shape_path = pshapes.joinpath(f"{svg_file.stem}.shape")
+        shape_path.write_text(tshape)
+        print(f"wrote {shape_path}")
 
         sheet.objects[svg_file.stem] = f"TODO: fill description for {svg_file.stem}"
 
