@@ -64,7 +64,7 @@ def build_shape(svg_path, width, height):
     ET.SubElement(xshape, 'aspectratio', attrib={'type': 'fixed'})
 
     xsvg = ET.SubElement(xshape, 'svg:svg')
-    ET.SubElement(xsvg, 'svg:image', attrib={'xlink:href': str(svg_path), 'x': '0', 'y': '0', 'width': str(width), 'height': str(height)})
+    ET.SubElement(xsvg, 'svg:image', attrib={'xlink:href': f"{svg_path.stem}.svg", 'x': '0', 'y': '0', 'width': str(width), 'height': str(height)})
 
     return xshape
 
