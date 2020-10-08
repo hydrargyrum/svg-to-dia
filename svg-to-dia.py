@@ -113,7 +113,7 @@ def main():
         ]).decode().split())
 
         new_path = pshapes.joinpath(f"{svg_file.stem}.svg")
-        new_path.write_text(svg_file.read_text())
+        new_path.write_bytes(svg_file.read_bytes())
         print(f"wrote {new_path}")
 
         xshape = build_shape(svg_file, width, height)
